@@ -63,7 +63,7 @@ export async function streamChat(
 
     try {
       while (true) {
-        const { done, value } = await reader.read();
+        const { done, value } = await reader!.read();
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
@@ -83,7 +83,7 @@ export async function streamChat(
         }
       }
     } finally {
-      reader.releaseLock();
+      reader!.releaseLock();
     }
   }
 
