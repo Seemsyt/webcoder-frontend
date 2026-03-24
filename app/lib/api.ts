@@ -33,7 +33,7 @@ export async function getThreadMessages(threadId: string): Promise<Message[]> {
     content: msg.content,
   }));
 }
-
+// new streaming function
 export async function streamChat(
   message: string,
   threadId?: string
