@@ -6,6 +6,7 @@ import ThreadSelector from './ThreadSelector';
 import LoadingIndicator from './LoadingIndicator';
 import { getThreadMessages, streamChat } from '../lib/api';
 import { Message } from "../types";
+import { threadId } from 'worker_threads';
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -36,6 +37,7 @@ export default function ChatInterface() {
       const threadMessages = await getThreadMessages(threadId);
       setMessages(threadMessages);
       setCurrentThreadId(threadId);
+      console.log(currentThreadId)
     } catch (error) {
       console.error('Failed to load thread:', error);
       alert('Failed to load thread messages');
@@ -58,7 +60,7 @@ export default function ChatInterface() {
     setIsStreaming(true);
 
     try {
-      const stream = streamChat(userMessage.content, currentThreadId || undefined);
+      const { threadId, stream } = await streamChat(userMessage.content, currentThreadId || undefined);
       let assistantResponse = '';
 
       setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
@@ -72,8 +74,15 @@ export default function ChatInterface() {
             role: 'assistant',
             content: assistantResponse,
           };
+          
           return newMessages;
         });
+      }
+
+      // Save thread ID after streaming completes
+      if (threadId && threadId !== currentThreadId) {
+        setCurrentThreadId(threadId);
+        console.log('✅ Current thread ID updated to:', threadId);
       }
 
     } catch (error) {

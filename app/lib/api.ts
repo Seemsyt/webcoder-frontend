@@ -34,10 +34,10 @@ export async function getThreadMessages(threadId: string): Promise<Message[]> {
   }));
 }
 
-export async function* streamChat(
+export async function streamChat(
   message: string, 
   threadId?: string
-): AsyncGenerator<string, void, unknown> {
+): Promise<{ threadId: string; stream: AsyncGenerator<string, void, unknown> }> {
   const response = await fetch(`${API_BASE_URL}/chat-stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -48,6 +48,11 @@ export async function* streamChat(
     throw new Error('Failed to send message');
   }
 
+  const receivedThreadId = response.headers.get('X-Thread-Id');
+  if (!receivedThreadId) {
+    throw new Error('No thread ID received from server');
+  }
+
   const reader = response.body?.getReader();
   const decoder = new TextDecoder();
   
@@ -55,15 +60,26 @@ export async function* streamChat(
     throw new Error('No reader available');
   }
 
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+  async function* streamGenerator() {
+    try {
+      while (true) {
+        const { done, value } = await reader!.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value);
+        yield chunk;
+      }
       
-      const chunk = decoder.decode(value);
-      yield chunk;
+      // Log thread ID after streaming completes
+      console.log('📌 Thread ID from backend:', receivedThreadId);
+      console.log('📌 Sent thread ID:', threadId || 'None (new thread)');
+    } finally {
+      reader!.releaseLock();
     }
-  } finally {
-    reader.releaseLock();
   }
+
+  return {
+    threadId: receivedThreadId,
+    stream: streamGenerator(),
+  };
 }
