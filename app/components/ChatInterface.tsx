@@ -1,14 +1,18 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import MessageBubble from './MessageBubble';
 import ThreadSelector from './ThreadSelector';
 import LoadingIndicator from './LoadingIndicator';
 import { getThreadMessages, streamChat } from '../lib/api';
+import { useAuth } from '../lib/AuthContext';
 import { Message } from "../types";
 import { threadId } from 'worker_threads';
 
 export default function ChatInterface() {
+  const router = useRouter();
+  const { token, user, logout } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
@@ -26,7 +30,7 @@ export default function ChatInterface() {
   }, [messages]);
 
   const handleThreadSelect = async (threadId: string) => {
-    if (!threadId) {
+    if (!threadId || !token) {
       setMessages([]);
       setCurrentThreadId(null);
       return;
@@ -34,13 +38,14 @@ export default function ChatInterface() {
 
     setIsLoading(true);
     try {
-      const threadMessages = await getThreadMessages(threadId);
+      console.log('🔄 Loading thread messages...');
+      const threadMessages = await getThreadMessages(threadId, token);
       setMessages(threadMessages);
       setCurrentThreadId(threadId);
-      console.log(currentThreadId)
+      console.log('✅ Thread loaded:', threadId);
     } catch (error) {
-      console.error('Failed to load thread:', error);
-      alert('Failed to load thread messages');
+      console.error('❌ Failed to load thread:', error);
+      alert(`Failed to load thread messages: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +53,19 @@ export default function ChatInterface() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading || isStreaming) return;
+    if (!input.trim() || isLoading || isStreaming || !token) {
+      if (!token) {
+        console.warn('⚠️ No token available - user might not be logged in');
+      }
+      return;
+    }
+
+    console.log('📨 Sending message:', { 
+      message: input.substring(0, 50),
+      hasToken: !!token,
+      tokenLength: token?.length,
+      currentThreadId
+    });
 
     const userMessage: Message = {
       role: 'user',
@@ -60,7 +77,8 @@ export default function ChatInterface() {
     setIsStreaming(true);
 
     try {
-      const { threadId, stream } = await streamChat(userMessage.content, currentThreadId || undefined);
+      console.log('📤 Sending message to backend...');
+      const { threadId, stream } = await streamChat(userMessage.content, token, currentThreadId || undefined);
       let assistantResponse = '';
 
       setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
@@ -86,9 +104,17 @@ export default function ChatInterface() {
       }
 
     } catch (error) {
-      console.error('Failed to get response:', error);
-      setMessages((prev) => prev.slice(0, -1));
-      alert('Failed to get response from server');
+      console.error('❌ Failed to get response:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Remove the user message and add error message
+      setMessages((prev) => [
+        ...prev.slice(0, -1),
+        {
+          role: 'assistant',
+          content: `❌ Error: ${errorMessage}`,
+        },
+      ]);
     } finally {
       setIsStreaming(false);
       inputRef.current?.focus();
@@ -102,6 +128,11 @@ export default function ChatInterface() {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
+
   return (
     <div className="flex flex-col h-screen bg-white text-black md:mr-72 w-full md:w-auto">
       
@@ -112,9 +143,21 @@ export default function ChatInterface() {
             Web agent
           </h1>
 
-          <div className="text-sm text-gray-500">
+          <div className="flex items-center gap-4">
+            {user && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">{user.username}</span>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1 text-sm bg-red-50 text-red-600 hover:bg-red-100 rounded transition"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+
             {currentThreadId && (
-              <span className="font-mono bg-gray-100 px-2 py-1 rounded">
+              <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs text-gray-500">
                 ID: {currentThreadId.substring(0, 8)}...
               </span>
             )}
