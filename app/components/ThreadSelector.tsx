@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getAllThreads } from "../lib/api";
+import { useAuth } from "../lib/AuthContext";
 import { Menu, X, MessageSquarePlus } from "lucide-react";
 
 interface Thread {
@@ -19,14 +20,17 @@ export default function ThreadSelector({
   currentThreadId
 }: ThreadSelectorProps) {
 
+  const { token } = useAuth();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadThreads = async () => {
+      if (!token) return;
+      
       try {
-        const data = await getAllThreads();
+        const data = await getAllThreads(token);
         setThreads(data);
       } catch (err) {
         console.error(err);
@@ -36,7 +40,7 @@ export default function ThreadSelector({
     };
 
     loadThreads();
-  }, []);
+  }, [token]);
 
   const handleNewChat = () => {
     onThreadSelect('');
