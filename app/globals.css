@@ -25,6 +25,18 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Remove default focus outline on all elements */
+*:focus {
+  outline: none;
+}
+
+textarea:focus,
+input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  -webkit-box-shadow: none;
+}
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {

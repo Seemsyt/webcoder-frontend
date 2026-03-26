@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { getAllThreads } from "../lib/api";
 import { useAuth } from "../lib/AuthContext";
-import { Menu, X, MessageSquarePlus } from "lucide-react";
+import { Menu, X, MessageSquarePlus, LogOut } from "lucide-react";
 
 interface Thread {
   id: string;
@@ -20,7 +20,7 @@ export default function ThreadSelector({
   currentThreadId
 }: ThreadSelectorProps) {
 
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -52,7 +52,7 @@ export default function ThreadSelector({
       {/* Hamburger (mobile only) */}
       <button
         onClick={() => setOpen(true)}
-        className="md:hidden fixed top-4 right-4 z-40 bg-white shadow border border-gray-200 p-2 rounded-lg"
+        className="md:hidden fixed top-4 right-4 z-[50] bg-zinc-800 shadow border border-zinc-700 p-2 rounded-lg"
       >
         <Menu size={20}/>
       </button>
@@ -61,7 +61,7 @@ export default function ThreadSelector({
       {open && (
         <div
           onClick={() => setOpen(false)}
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[55] md:hidden"
         />
       )}
 
@@ -71,32 +71,35 @@ export default function ThreadSelector({
         fixed top-0 right-0
         h-full
         w-72
-        bg-white
+        bg-zinc-900
         border-l
+        border-zinc-700
         shadow-xl
-        z-50
+        z-[60]
         flex flex-col
         transform transition-transform duration-300 ease-in-out
         ${open ? "translate-x-0" : "translate-x-full"}
         md:translate-x-0
+        pointer-events-auto
         `}
       >
 
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-700 gap-2">
 
           <button
             onClick={handleNewChat}
-            className="flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700 transition"
+            className="flex items-center gap-2 bg-gray-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition"
+            title="New Chat"
           >
             <MessageSquarePlus size={18}/>
-            New Chat
+            <span className="">New Chat</span>
           </button>
 
           {/* close button mobile */}
           <button
             onClick={() => setOpen(false)}
-            className="md:hidden p-1 hover:bg-gray-100 rounded"
+            className="md:hidden p-1 hover:bg-zinc-800 rounded"
           >
             <X size={20}/>
           </button>
@@ -108,14 +111,14 @@ export default function ThreadSelector({
 
           {loading && (
             <>
-              <div className="h-9 bg-gray-200 animate-pulse rounded"/>
-              <div className="h-9 bg-gray-200 animate-pulse rounded"/>
-              <div className="h-9 bg-gray-200 animate-pulse rounded"/>
+              <div className="h-9 bg-zinc-700 animate-pulse rounded"/>
+              <div className="h-9 bg-zinc-700 animate-pulse rounded"/>
+              <div className="h-9 bg-zinc-700 animate-pulse rounded"/>
             </>
           )}
 
           {!loading && threads.length === 0 && (
-            <p className="text-center text-sm text-gray-500 mt-6">
+            <p className="text-center text-sm text-zinc-400 mt-6">
               No chats yet
             </p>
           )}
@@ -139,8 +142,8 @@ export default function ThreadSelector({
                 truncate
                 transition
                 ${active
-                  ? "bg-blue-600 text-white"
-                  : "hover:bg-gray-100"}
+                  ? "bg-gray-600 text-white"
+                  : "text-zinc-200 hover:bg-zinc-800"}
                 `}
               >
                 {thread.title || "New Chat"}
@@ -149,6 +152,18 @@ export default function ThreadSelector({
 
           })}
 
+        </div>
+
+        {/* Logout button - fixed at bottom */}
+        <div className="border-t border-zinc-700 p-4 bg-zinc-800/50">
+          <button
+            onClick={logout}
+            className="w-full flex items-center justify-center gap-2 bg-red-900/40 text-red-400 px-3 py-2 rounded-lg text-sm hover:bg-red-800/60 hover:text-red-300 transition border border-red-900/30"
+            title="Logout"
+          >
+            <LogOut size={18}/>
+            <span>Logout</span>
+          </button>
         </div>
 
       </aside>

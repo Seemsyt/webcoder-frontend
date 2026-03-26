@@ -16,8 +16,8 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
       <div
         className={`max-w-[85%] sm:max-w-[70%] md:max-w-[60%] rounded-lg px-3 md:px-4 py-2 md:py-3 ${
           isUser
-            ? 'bg-blue-600 text-white rounded-br-none'
-            : 'bg-gray-100 text-gray-800 rounded-bl-none'
+            ? 'bg-gray-600 text-white rounded-br-none'
+            : 'bg-zinc-800 text-zinc-100 border border-zinc-700 rounded-bl-none'
         }`}
       >
         <div className="font-semibold text-xs mb-1 opacity-75 hidden">
@@ -30,11 +30,11 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
               code(props) {
                 const { inline, className, children, ...rest } = props as any;
                 return inline ? (
-                  <code className="bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-sm font-mono" {...rest}>
+                  <code className="bg-zinc-700 text-zinc-100 px-1 py-0.5 rounded text-sm font-mono" {...rest}>
                     {children}
                   </code>
                 ) : (
-                  <pre className="bg-gray-900 text-gray-100 rounded-lg p-3 overflow-x-auto text-sm">
+                  <pre className="bg-zinc-950 text-zinc-100 rounded-lg p-3 overflow-x-auto text-sm border border-zinc-800">
                     <code className={className} {...rest}>
                       {children}
                     </code>
@@ -46,7 +46,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                   <a
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-gray-600 hover:underline"
                     {...props}
                   />
                 );
