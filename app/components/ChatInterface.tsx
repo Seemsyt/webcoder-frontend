@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import MessageBubble from './MessageBubble';
 import ThreadSelector from './ThreadSelector';
 import { getThreadMessages, streamChat } from '../lib/api';
@@ -22,14 +21,12 @@ import {
 } from 'lucide-react';
 
 export default function ChatInterface() {
-  const router = useRouter();
-  const { token, user, logout } = useAuth();
+  const { token, user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
   const [typingDots, setTypingDots] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastMessageTime, setLastMessageTime] = useState<Date | null>(null);
@@ -165,11 +162,6 @@ export default function ChatInterface() {
       e.preventDefault();
       handleSubmit(e);
     }
-  };
-
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
   };
 
   // Format last message time
