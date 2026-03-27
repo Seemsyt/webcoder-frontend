@@ -214,7 +214,7 @@ export default function ChatInterface() {
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl font-bold bg-gradient-to-r from-gray-700 to-amber-700 bg-clip-text text-transparent">
-                Web Agent
+                Welcome
               </h1>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
